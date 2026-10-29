@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
-import { SECTIONS } from "./data";
+import { SECTIONS as BASE } from "./data";
+import { EXTRA_PATHO, UPDATES, CASES, QUIZ } from "./learn";
+const SECTIONS = { ...BASE, Pathophysiology: [...BASE.Pathophysiology, ...EXTRA_PATHO], "2026 Updates": UPDATES, "Case Studies": [], Quiz: [] };
 
+function Cases(){const[o,setO]=useState({});return CASES.map((c,i)=>(<div className="card" key={i}><h3>{c.t}</h3><p>{c.s}</p><p><b>{c.q}</b></p><button onClick={()=>setO({...o,[i]:!o[i]})}>{o[i]?"Hide":"Show"} answer</button>{o[i]&&<p>{c.a}</p>}</div>));}
+function Quiz(){const[i,setI]=useState(0);const[pick,setPick]=useState(null);const[sc,setSc]=useState(0);const done=i>=QUIZ.length;if(done)return(<div className="card res"><h3>Score: {sc} / {QUIZ.length}</h3><button onClick={()=>{setI(0);setPick(null);setSc(0);}}>Restart</button></div>);const[q,opts,ans,ex]=QUIZ[i];return(<div className="card"><h3>Question {i+1} of {QUIZ.length}</h3><p>{q}</p>{opts.map((o,k)=>(<div key={k}><button style={{width:"100%",textAlign:"left",margin:"3px 0",padding:9,border:"1px solid var(--bd)",borderRadius:8,background:pick!==null&&k===ans?"#2e8b57":pick===k?"#d64545":"var(--card)",color:pick!==null&&(k===ans||pick===k)?"#fff":"var(--ink)"}} disabled={pick!==null} onClick={()=>{setPick(k);if(k===ans)setSc(sc+1);}}>{o}</button></div>))}{pick!==null&&<><p>{ex}</p><button onClick={()=>{setI(i+1);setPick(null);}}>Next</button></>}</div>);}
 function Assess() {
   const [f, setF] = useState({ fpg: "", pg2: "", a1c: "", rnd: "", sym: "no", age: "", bmi: "", ketosis: "no", ab: "unknown", fam: "no" });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -57,7 +61,7 @@ export default function Home() {
     <main>
       <input placeholder="Search all topics (e.g. DKA, metformin, retinopathy)" value={q} onChange={(e) => setQ(e.target.value)} />
       {hits ? (hits.length ? hits.map((h, i) => <Card key={i} it={h.it} tag={h.s} />) : <p>No matches.</p>)
-        : tab === "Assessment" ? <Assess /> : SECTIONS[tab].map((it, i) => <Card key={i} it={it} />)}
+        : tab === "Assessment" ? <Assess /> : tab === "Case Studies" ? <Cases /> : tab === "Quiz" ? <Quiz /> : SECTIONS[tab].map((it, i) => <Card key={i} it={it} />)}
     </main>
     <footer>Educational reference for clinicians. Verify doses against current guidelines.</footer>
   </>);
