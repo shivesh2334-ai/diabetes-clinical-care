@@ -11,3 +11,17 @@ main{max-width:900px;margin:0 auto;padding:12px}
 input,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--ink);margin:4px 0 10px}
 label{font-size:13px;color:var(--mut)}.res{border-left:4px solid var(--acc)}.warn{border-left-color:#d64545}
 footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
+
+.medicine-table-wrap{overflow-x:auto;margin-top:12px}
+.medicine-table{width:100%;border-collapse:collapse;font-size:14px;min-width:700px}
+.medicine-table caption{text-align:left;color:var(--mut);font-size:12px;padding-bottom:10px}
+.medicine-table th,.medicine-table td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--bd);overflow-wrap:anywhere}
+.medicine-table thead th{background:var(--bg)}
+.medicine-table small{color:var(--mut);font-weight:400}
+.medicine-table a{color:var(--acc);text-decoration:underline}
+.card h2{margin-top:0;font-size:20px}
+.medicine-link{background:var(--acc);color:var(--bg);padding:9px 12px;border:0;border-radius:8px;margin-top:12px;cursor:pointer}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+
+

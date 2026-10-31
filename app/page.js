@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
+import MedicineDirectory from "./medicine-directory";
+import { MEDICINES } from "./medicines";
+import { matchesMedicine } from "./medicine-directory";
 import { SECTIONS as BASE } from "./data";
 import { EXTRA_PATHO, UPDATES, CASES, QUIZ } from "./learn";
-const SECTIONS = { ...BASE, Pathophysiology: [...BASE.Pathophysiology, ...EXTRA_PATHO], "2026 Updates": UPDATES, "Case Studies": [], Quiz: [] };
+const SECTIONS = { ...BASE, "Indian Medicines": [], Pathophysiology: [...BASE.Pathophysiology, ...EXTRA_PATHO], "2026 Updates": UPDATES, "Case Studies": [], Quiz: [] };
 
 function Cases(){const[o,setO]=useState({});return CASES.map((c,i)=>(<div className="card" key={i}><h3>{c.t}</h3><p>{c.s}</p><p><b>{c.q}</b></p><button onClick={()=>setO({...o,[i]:!o[i]})}>{o[i]?"Hide":"Show"} answer</button>{o[i]&&<p>{c.a}</p>}</div>));}
 function Quiz(){const[i,setI]=useState(0);const[pick,setPick]=useState(null);const[sc,setSc]=useState(0);const done=i>=QUIZ.length;if(done)return(<div className="card res"><h3>Score: {sc} / {QUIZ.length}</h3><button onClick={()=>{setI(0);setPick(null);setSc(0);}}>Restart</button></div>);const[q,opts,ans,ex]=QUIZ[i];return(<div className="card"><h3>Question {i+1} of {QUIZ.length}</h3><p>{q}</p>{opts.map((o,k)=>(<div key={k}><button style={{width:"100%",textAlign:"left",margin:"3px 0",padding:9,border:"1px solid var(--bd)",borderRadius:8,background:pick!==null&&k===ans?"#2e8b57":pick===k?"#d64545":"var(--card)",color:pick!==null&&(k===ans||pick===k)?"#fff":"var(--ink)"}} disabled={pick!==null} onClick={()=>{setPick(k);if(k===ans)setSc(sc+1);}}>{o}</button></div>))}{pick!==null&&<><p>{ex}</p><button onClick={()=>{setI(i+1);setPick(null);}}>Next</button></>}</div>);}
@@ -54,15 +57,17 @@ export default function Home() {
   const [q, setQ] = useState("");
   const all = Object.entries(SECTIONS).flatMap(([s, items]) => items.map((it) => ({ s, it })));
   const hits = q.length > 1 ? all.filter(({ it }) => (it[0] + it[1]).toLowerCase().includes(q.toLowerCase())) : null;
-  const Card = ({ it, tag }) => (<div className="card"><h3>{it[0]}</h3>{tag && <small>{tag}</small>}<ul>{it[1].split("|").map((p, i) => <li key={i}>{p}</li>)}</ul></div>);
+  const medicineHits = q.trim().length > 1 ? MEDICINES.filter(m => matchesMedicine(m, q)) : [];
+  const Card = ({ it, tag }) => (<div className="card"><h3>{it[0]}</h3>{tag && <small>{tag}</small>}<ul>{it[1].split("|").map((p, i) => <li key={i}>{p}</li>)}</ul>{["Drug classes", "Type 1 DM", "Type 2 DM (stepwise)"].includes(it[0]) && <button className="medicine-link" onClick={() => {setTab("Indian Medicines");setQ("");}}>View Indian brands, companies & costs</button>}</div>);
   return (<>
     <header><h1>Diabetes in Clinical Care</h1><p>Based on Harrison's Principles, Ch.403-406 (Diagnosis, Management, Complications, Hypoglycemia)</p></header>
     <nav>{tabs.map((t) => <button key={t} className={t === tab && !hits ? "on" : ""} onClick={() => { setTab(t); setQ(""); }}>{t}</button>)}</nav>
     <main>
-      <input placeholder="Search all topics (e.g. DKA, metformin, retinopathy)" value={q} onChange={(e) => setQ(e.target.value)} />
-      {hits ? (hits.length ? hits.map((h, i) => <Card key={i} it={h.it} tag={h.s} />) : <p>No matches.</p>)
-        : tab === "Assessment" ? <Assess /> : tab === "Case Studies" ? <Cases /> : tab === "Quiz" ? <Quiz /> : SECTIONS[tab].map((it, i) => <Card key={i} it={it} />)}
+      <input aria-label="Search topics, generic medicines, Indian brands and companies" placeholder="Search topics, medicines, Indian brands or companies" value={q} onChange={(e) => setQ(e.target.value)} />
+      {hits ? <>{hits.map((h, i) => <Card key={i} it={h.it} tag={h.s} />)}{medicineHits.length > 0 && <MedicineDirectory key={q} query={q} />}{!hits.length && !medicineHits.length && <p>No matches.</p>}</>
+        : tab === "Indian Medicines" ? <MedicineDirectory query={q} /> : tab === "Assessment" ? <Assess /> : tab === "Case Studies" ? <Cases /> : tab === "Quiz" ? <Quiz /> : SECTIONS[tab].map((it, i) => <Card key={i} it={it} />)}
     </main>
     <footer>Educational reference for clinicians. Verify doses against current guidelines.</footer>
   </>);
 }
+
