@@ -1,3 +1,4 @@
+import { COMBINATION_CLASSES } from "./combinations.js";
 // Indian retail reference, checked 31 October 2026. Prices are snapshots, not live quotations.
 export const CHECKED_ON = "2026-10-31";
 const mg = (slug) => "https://www.1mg.com/" + slug;
@@ -16,7 +17,7 @@ const sources = {
 };
 const row = (generic, strength, brand, company, price, unit, priceType, source, availability = "Listed; local stock must be checked") =>
  ({generic, strength, brand, company, companyRole: "Marketer / brand company", manufacturer: null, price, unit, priceType, source, availability, checkedOn: CHECKED_ON});
-export const MEDICINE_CLASSES = [
+const BASE_MEDICINE_CLASSES = [
  {id:"biguanides", name:"Biguanides", note:"Five brand examples of metformin, not five different molecules. These entries are immediate-release tablets.", medicines:[
  row("Metformin","500 mg tablet (IR)","Glycomet","USV Private Limited",19.59,"10 tablets","MRP", "https://pharmeasy.in/medicines/glycomet-500mg-strip-of-10-tablets-49207/"),
  row("Metformin","500 mg tablet (IR)","Okamet","Cipla Ltd",1.04,"1 tablet","Listed unit price",sources.met),
@@ -113,5 +114,19 @@ export const MEDICINE_CLASSES = [
  ]},
  {id:"amylin", name:"Amylin analogues", note:"Pramlintide is mentioned in the learning material, but an Indian retail brand and price were not verified in this review. No invented brands or prices are supplied.", medicines:[]},
 ];
-export const MEDICINES = MEDICINE_CLASSES.flatMap(group => group.medicines.map(m => ({...m, classId:group.id, className:group.name})));
+export const PHARMACOLOGICAL_CLASSES = BASE_MEDICINE_CLASSES.map(({id,name}) => ({id,name}));
+export const MEDICINE_CLASSES = [
+ ...BASE_MEDICINE_CLASSES.map(group => ({
+   ...group,
+   kind: group.id === "premix" ? "combination" : "single",
+   limited: group.id === "amylin" || group.id === "dual",
+   classIds: group.id === "premix" ? ["premix","regular","nph"] : [group.id],
+ })),
+ ...COMBINATION_CLASSES,
+];
+const classNames = Object.fromEntries(PHARMACOLOGICAL_CLASSES.map(group => [group.id,group.name]));
+export const MEDICINES = MEDICINE_CLASSES.flatMap(group => group.medicines.map(m => ({
+ ...m, classId:group.id, className:group.name, kind:group.kind,
+ componentClasses:group.classIds.map(id=>classNames[id]).join(" "),
+})));
 
